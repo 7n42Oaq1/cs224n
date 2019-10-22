@@ -73,15 +73,15 @@ class NMT(nn.Module):
         ###     Dropout Layer:
         ###         https://pytorch.org/docs/stable/nn.html#torch.nn.Dropout
         self.encoder = nn.LSTM(embed_size, hidden_size,num_layers=1,bias=True,bidirectional=True)
-        self.decoder = nn.LSTMCell(embed_size, hidden_size, bias=True)
+        self.decoder = nn.LSTMCell(embed_size + hidden_size, hidden_size, bias=True)
         self.h_projection = nn.Linear(2 * hidden_size, hidden_size, bias=False)
         self.c_projection = nn.Linear(2 * hidden_size, hidden_size, bias=False)
         self.att_projection = nn.Linear(2 * hidden_size, hidden_size, bias=False)
         self.combined_output_projection = nn.Linear(3 * hidden_size, hidden_size, bias=False)
-        self.target_vocab_projection = nn.Linear(len(self.vocab.tgt), hidden_size, bias=False)
+        self.target_vocab_projection = nn.Linear(hidden_size,len(self.vocab.tgt), bias=False)
         self.dropout = nn.Dropout(self.dropout_rate)
         ### END YOUR CODE
-
+        # print(self.vocab.src)
 
     def forward(self, source: List[List[str]], target: List[List[str]]) -> torch.Tensor:
         """ Take a mini-batch of source and target sentences, compute the log-likelihood of
@@ -311,8 +311,11 @@ class NMT(nn.Module):
         ###         https://pytorch.org/docs/stable/torch.html#torch.unsqueeze
         ###     Tensor Squeeze:
         ###         https://pytorch.org/docs/stable/torch.html#torch.squeeze
-
-
+        dec_state = self.decoder(Ybar_t, dec_state)
+        dec_hidden, dec_cell = dec_state
+        # e_t = torch.dot(torch.dot(dec_hidden, enc_hiddens_proj), enc_hiddens)
+        e_t = torch.bmm(enc_hiddens_proj,torch.unsqueeze(dec_hidden, -1))
+        e_t = torch.squeeze(e_t, -1)
         ### END YOUR CODE
 
         # Set e_t to -inf where enc_masks has 1
@@ -346,8 +349,13 @@ class NMT(nn.Module):
         ###         https://pytorch.org/docs/stable/torch.html#torch.cat
         ###     Tanh:
         ###         https://pytorch.org/docs/stable/torch.html#torch.tanh
-
-
+        alpha_t = torch.unsqueeze(nn.Softmax(dim=1)(e_t), 1)
+        a_t = torch.bmm(alpha_t, enc_hiddens)
+        a_t = torch.squeeze(a_t, 1)
+        U_t = torch.cat((a_t, dec_hidden), dim=1)
+        V_t = self.combined_output_projection(U_t)
+        O_t = nn.Tanh()(V_t)
+        O_t = self.dropout(O_t)
         ### END YOUR CODE
 
         combined_output = O_t
