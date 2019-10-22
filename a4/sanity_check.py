@@ -78,10 +78,10 @@ def generate_outputs(model, source, target, vocab):
         combined_outputs = model.decode(enc_hiddens, enc_masks, dec_init_state, target_padded)
 
     # Save Tensors to disk
-    torch.save(enc_hiddens, './sanity_check_en_es_data/enc_hiddens.pkl')
-    torch.save(dec_init_state, './sanity_check_en_es_data/dec_init_state.pkl') 
-    torch.save(enc_masks, './sanity_check_en_es_data/enc_masks.pkl')
-    torch.save(combined_outputs, './sanity_check_en_es_data/combined_outputs.pkl')
+    torch.save(enc_hiddens, 'a4/sanity_check_en_es_data/enc_hiddens.pkl')
+    torch.save(dec_init_state, 'a4/sanity_check_en_es_data/dec_init_state.pkl') 
+    torch.save(enc_masks, 'a4/sanity_check_en_es_data/enc_masks.pkl')
+    torch.save(combined_outputs, 'a4/sanity_check_en_es_data/combined_outputs.pkl')
 
 
 def question_1d_sanity_check(model, src_sents, tgt_sents, vocab):
@@ -97,8 +97,8 @@ def question_1d_sanity_check(model, src_sents, tgt_sents, vocab):
     source_padded = model.vocab.src.to_input_tensor(src_sents, device=model.device)
 
     # Load Outputs
-    enc_hiddens_target = torch.load('./sanity_check_en_es_data/enc_hiddens.pkl')
-    dec_init_state_target = torch.load('./sanity_check_en_es_data/dec_init_state.pkl')
+    enc_hiddens_target = torch.load('a4/sanity_check_en_es_data/enc_hiddens.pkl')
+    dec_init_state_target = torch.load('a4/sanity_check_en_es_data/dec_init_state.pkl')
 
     # Test
     with torch.no_grad():
@@ -123,20 +123,20 @@ def question_1e_sanity_check(model, src_sents, tgt_sents, vocab):
     print ("-"*80)
 
     # Load Inputs
-    dec_init_state = torch.load('./sanity_check_en_es_data/dec_init_state.pkl')
-    enc_hiddens = torch.load('./sanity_check_en_es_data/enc_hiddens.pkl')
-    enc_masks = torch.load('./sanity_check_en_es_data/enc_masks.pkl')
-    target_padded = torch.load('./sanity_check_en_es_data/target_padded.pkl')
+    dec_init_state = torch.load('a4/sanity_check_en_es_data/dec_init_state.pkl')
+    enc_hiddens = torch.load('a4/sanity_check_en_es_data/enc_hiddens.pkl')
+    enc_masks = torch.load('a4/sanity_check_en_es_data/enc_masks.pkl')
+    target_padded = torch.load('a4/sanity_check_en_es_data/target_padded.pkl')
 
     # Load Outputs
-    combined_outputs_target = torch.load('./sanity_check_en_es_data/combined_outputs.pkl')
+    combined_outputs_target = torch.load('a4/sanity_check_en_es_data/combined_outputs.pkl')
 
     # Configure for Testing
     reinitialize_layers(model)
     COUNTER = [0]
     def stepFunction(Ybar_t, dec_state, enc_hiddens, enc_hiddens_proj, enc_masks):
-       dec_state = torch.load('./sanity_check_en_es_data/step_dec_state_{}.pkl'.format(COUNTER[0]))
-       o_t = torch.load('./sanity_check_en_es_data/step_o_t_{}.pkl'.format(COUNTER[0]))
+       dec_state = torch.load('a4/sanity_check_en_es_data/step_dec_state_{}.pkl'.format(COUNTER[0]))
+       o_t = torch.load('a4/sanity_check_en_es_data/step_o_t_{}.pkl'.format(COUNTER[0]))
        COUNTER[0]+=1
        return dec_state, o_t, None
     model.step = stepFunction
@@ -160,16 +160,16 @@ def question_1f_sanity_check(model, src_sents, tgt_sents, vocab):
     reinitialize_layers(model)
 
     # Inputs
-    Ybar_t = torch.load('./sanity_check_en_es_data/Ybar_t.pkl')
-    dec_init_state = torch.load('./sanity_check_en_es_data/dec_init_state.pkl')
-    enc_hiddens = torch.load('./sanity_check_en_es_data/enc_hiddens.pkl')
-    enc_masks = torch.load('./sanity_check_en_es_data/enc_masks.pkl')
-    enc_hiddens_proj = torch.load('./sanity_check_en_es_data/enc_hiddens_proj.pkl')
+    Ybar_t = torch.load('a4/sanity_check_en_es_data/Ybar_t.pkl')
+    dec_init_state = torch.load('a4/sanity_check_en_es_data/dec_init_state.pkl')
+    enc_hiddens = torch.load('a4/sanity_check_en_es_data/enc_hiddens.pkl')
+    enc_masks = torch.load('a4/sanity_check_en_es_data/enc_masks.pkl')
+    enc_hiddens_proj = torch.load('a4/sanity_check_en_es_data/enc_hiddens_proj.pkl')
 
     # Output
-    dec_state_target = torch.load('./sanity_check_en_es_data/dec_state.pkl')
-    o_t_target = torch.load('./sanity_check_en_es_data/o_t.pkl')
-    e_t_target = torch.load('./sanity_check_en_es_data/e_t.pkl')
+    dec_state_target = torch.load('a4/sanity_check_en_es_data/dec_state.pkl')
+    o_t_target = torch.load('a4/sanity_check_en_es_data/o_t.pkl')
+    e_t_target = torch.load('a4/sanity_check_en_es_data/e_t.pkl')
 
     # Run Tests
     with torch.no_grad():
@@ -194,7 +194,7 @@ def main():
 
     # Check Python & PyTorch Versions
     assert (sys.version_info >= (3, 5)), "Please update your installation of Python to version >= 3.5"
-    assert(torch.__version__ == "1.0.0"), "Please update your installation of PyTorch. You have {} and you should have version 1.0.0".format(torch.__version__)
+    # assert(torch.__version__ == "1.0.0"), "Please update your installation of PyTorch. You have {} and you should have version 1.0.0".format(torch.__version__)
 
     # Seed the Random Number Generators
     seed = 1234
@@ -203,15 +203,15 @@ def main():
     np.random.seed(seed * 13 // 7)
 
     # Load training data & vocabulary
-    train_data_src = read_corpus('./sanity_check_en_es_data/train_sanity_check.es', 'src')
-    train_data_tgt = read_corpus('./sanity_check_en_es_data/train_sanity_check.en', 'tgt')
+    train_data_src = read_corpus('a4/sanity_check_en_es_data/train_sanity_check.es', 'src')
+    train_data_tgt = read_corpus('a4/sanity_check_en_es_data/train_sanity_check.en', 'tgt')
     train_data = list(zip(train_data_src, train_data_tgt))
 
     for src_sents, tgt_sents in batch_iter(train_data, batch_size=BATCH_SIZE, shuffle=True):
         src_sents = src_sents
         tgt_sents = tgt_sents
         break
-    vocab = Vocab.load('./sanity_check_en_es_data/vocab_sanity_check.json') 
+    vocab = Vocab.load('a4/sanity_check_en_es_data/vocab_sanity_check.json') 
 
     # Create NMT Model
     model = NMT(

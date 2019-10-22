@@ -33,7 +33,7 @@ def pad_sents(sents, pad_token):
     for sentence in sents:
         if len(sentence) > max_length:
             max_length = len(sentence)
-    sents_padded = [sentence + (max_length - len(sentence)) * [pad_token]]
+    sents_padded = [sentence + (max_length - len(sentence)) * [pad_token] for sentence in sents]
     ### END YOUR CODE
 
     return sents_padded
